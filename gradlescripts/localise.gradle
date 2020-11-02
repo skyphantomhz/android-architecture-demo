@@ -1,0 +1,176 @@
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+import org.w3c.dom.NodeList
+import org.xml.sax.SAXException
+
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
+import javax.xml.transform.OutputKeys
+import javax.xml.transform.TransformerException
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.dom.DOMSource
+import javax.xml.transform.stream.StreamResult
+
+task syncString {
+    doLast{
+        cleanUpStringResources()
+        downloadStringResources()
+    }
+}
+
+private def cleanUpStringResources() {
+    def paths = getStringsPath()
+    for (String path in paths) {
+        delete path
+    }
+}
+
+private List<String> getStringsPath() {
+
+    def stringName = 'locostrings.xml'
+    def supportedLocales = getSupportedLocales()
+    def mainFlavor = "main"
+
+    def flavorStringName = 'locostrings.xml'
+
+    List<String> results = []
+
+    for (String locale in supportedLocales) {
+        results.add("${getValuesFolder(locale, mainFlavor)}/${stringName}")
+    }
+
+//    appNameConfig().forEach { flavor, _ ->
+//        supportedLanguage(flavor).forEach { locale ->
+//            results.add("${getValuesFolder(locale, flavor)}/${flavorStringName}")
+//        }
+//    }
+    return results
+}
+
+static private List<String> getSupportedLocales() {
+    return ['en','vi']
+}
+
+private String getValuesFolder(String locale, String flavor, String module = "app") {
+    String destinationFolder
+    if ("en" == locale) {
+        destinationFolder = "${rootProject.projectDir}/$module/src/$flavor/res/values"
+    } else {
+        destinationFolder = "${rootProject.projectDir}/$module/src/$flavor/res/values-${locale}"
+    }
+    return destinationFolder
+}
+
+private def downloadStringResources() {
+    def mainFlavor = "main"
+
+    def stringName = 'locostrings.xml'
+    def supportedLocales = getSupportedLocales()
+
+    def credentialsProps = getCredentialProps()
+    downloadString(credentialsProps['locoApiKey'], stringName, supportedLocales, mainFlavor)
+}
+
+private def getCredentialProps() {
+    def props = new Properties()
+    props.load(project.rootProject.file('credentials.properties').newDataInputStream())
+    return props
+}
+
+private def downloadString(String sourceProjectKey, String destinationName, List<String> locales, String flavor, String module = "app") {
+    List<String> stringFiles = []
+    for (String locale in locales) {
+        String destinationFolder = getValuesFolder(locale, flavor, module)
+        String srcUrl
+        if ("en" == locale) {
+            srcUrl = "https://localise.biz/api/export/locale/en.xml?format=android&order=id&key=$sourceProjectKey"
+        } else {
+            //There are many status can be set in localise, we must use all except un-translate
+            srcUrl = "https://localise.biz/api/export/locale/${locale}.xml?format=android&order=id&status=!untranslated&key=$sourceProjectKey"
+        }
+        def folder = file(destinationFolder)
+        def destination = "${destinationFolder}/${destinationName}"
+        if (!folder.exists()) {
+            folder.mkdirs()
+        }
+        stringFiles.add(destination)
+        ant.get(src: srcUrl, dest: file(destination))
+
+        editDownloadedFile(destination)
+    }
+}
+
+private static def editDownloadedFile(String filePath) {
+    File xmlFile = new File(filePath)
+    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance()
+    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder()
+
+    Document doc = null
+    try {
+        doc = dBuilder.parse(xmlFile)
+        doc.getDocumentElement().normalize()
+    } catch (SAXException | IOException e) {
+        System.out.println("Error occured when parsiong xml file: " + e.getLocalizedMessage())
+    }
+
+    if (doc != null) {
+        modifyStringKey(doc)
+        // Add some tools:ignore to avoid warning
+        addIgnoreInformation(doc)
+
+        transferDocumentToXmlFile(doc, new File(filePath))
+    }
+}
+
+private static def modifyStringKey(Document doc) {
+    NodeList stringList = doc.getElementsByTagName("string")
+    for (int temp = 0; temp < stringList.getLength(); temp++) {
+        Node nNode = stringList.item(temp)
+        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            Element eElement = (Element) nNode
+            String replacedName = eElement.getAttribute("name").replace(".", "_")
+            eElement.setAttribute("name", replacedName)
+        }
+    }
+
+    NodeList pluralsList = doc.getElementsByTagName("plurals")
+    for (int temp = 0; temp < pluralsList.getLength(); temp++) {
+        Node nNode = pluralsList.item(temp)
+        if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+            Element eElement = (Element) nNode
+            String replacedName = eElement.getAttribute("name").replace(".", "_")
+            eElement.setAttribute("name", replacedName)
+        }
+    }
+    doc.getDocumentElement().normalize()
+}
+
+private static def addIgnoreInformation(Document doc) {
+    NodeList resourceTags = doc.getElementsByTagName("resources")
+    if (resourceTags.getLength() > 0) {
+        Node first = resourceTags.item(0)
+        if (first.getNodeType() == Node.ELEMENT_NODE) {
+            Element eElement = (Element) first
+            eElement.setAttribute("xmlns:tools", "http://schemas.android.com/tools")
+            eElement.setAttribute("tools:ignore", "MissingTranslation,ExtraTranslation")
+            eElement.removeAttribute("xmlns:xliff")
+        }
+    }
+    doc.getDocumentElement().normalize()
+}
+
+private static def transferDocumentToXmlFile(Document doc, File destination) {
+    try {
+        TransformerFactory transformerFactory = TransformerFactory.newInstance()
+        javax.xml.transform.Transformer transformer = transformerFactory.newTransformer()
+        DOMSource source = new DOMSource(doc)
+
+        StreamResult result = new StreamResult(destination)
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2")
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+        transformer.transform(source, result)
+    } catch (TransformerException e) {
+        System.out.println("Error occured when transform xml to file: " + e.getLocalizedMessage())
+    }
+}

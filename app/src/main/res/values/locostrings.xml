@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+ Loco xml export: Android string resources
+ Project: Demo Project
+ Release: Working copy
+ Locale: en, English
+ Exported by: skyphantomhz
+ Exported at: Mon, 02 Nov 2020 14:12:08 +0700
+--><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,ExtraTranslation">
+    <string name="hello_world">Hello World</string>
+</resources>
