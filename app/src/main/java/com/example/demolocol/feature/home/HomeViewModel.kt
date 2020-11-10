@@ -12,10 +12,21 @@ import kotlinx.coroutines.launch
 class HomeViewModel(private val repoRepository: RepoRepository) : BaseViewModel() {
 
     var repos: LiveData<List<Repo>> = MutableLiveData()
+    private var lastSearchTime = System.currentTimeMillis()
+    private val debounceTime = 500
 
-    fun searchRepo(){
+
+    fun searchRepo(query: String?) {
+        if (query.isNullOrBlank()) return
         viewModelScope.launch {
-            repos.postValue(repoRepository.searchRepos("a"))
+            repos.postValue(repoRepository.searchRepos(query))
+        }
+    }
+
+    fun onQueryTextChange(query: String?) {
+        if (System.currentTimeMillis() - lastSearchTime > debounceTime) {
+            searchRepo(query)
+            lastSearchTime = System.currentTimeMillis()
         }
     }
 }

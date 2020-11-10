@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
@@ -29,12 +30,24 @@ class HomeFragment : Fragment() {
             it.adapter = repoAdapter
         }
 
+        view.findViewById<SearchView>(R.id.sv_repo).also {
+            it.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    homeViewModel.searchRepo(query)
+                    return true
+                }
+
+                override fun onQueryTextChange(query: String?): Boolean {
+                    homeViewModel.onQueryTextChange(query)
+                    return true
+                }
+
+            })
+        }
+
         homeViewModel.repos.observe(viewLifecycleOwner, Observer {
             repoAdapter.setData(it)
         })
-
-
-        homeViewModel.searchRepo()
     }
 
     companion object {
