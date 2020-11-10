@@ -65,7 +65,6 @@ dependencies {
 
     testImplementation deps.junit
     androidTestImplementation deps.atsl.ext_junit
-    androidTestImplementation deps.espresso.core
 
     implementation deps.timber
 }
