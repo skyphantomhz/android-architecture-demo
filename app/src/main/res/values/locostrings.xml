@@ -5,7 +5,7 @@
  Release: Working copy
  Locale: en, English
  Exported by: skyphantomhz
- Exported at: Mon, 02 Nov 2020 14:12:08 +0700
+ Exported at: Mon, 09 Nov 2020 16:42:16 +0700
 --><resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,ExtraTranslation">
     <string name="hello_world">Hello World</string>
 </resources>
