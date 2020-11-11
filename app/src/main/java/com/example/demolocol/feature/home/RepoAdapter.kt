@@ -14,7 +14,7 @@ class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val VIEW_TYPE_NORMAL = 1
     private var isLoaderVisible = false
 
-    private var repos = mutableListOf<Repo>()
+    private var repos = mutableListOf<Repo?>()
 
     fun setData(repos: List<Repo>) {
         this.repos = repos.toMutableList()
@@ -44,7 +44,7 @@ class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     fun addLoading() {
         isLoaderVisible = true
-        repos.add(Repo())
+        repos.add(null)
         notifyItemInserted(repos.size - 1)
     }
 
@@ -52,7 +52,7 @@ class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         isLoaderVisible = false
         val position: Int = repos.size - 1
         val item: Repo? = getItem(position)
-        if (item != null) {
+        if (item == null) {
             repos.removeAt(position)
             notifyItemRemoved(position)
         }
@@ -66,7 +66,9 @@ class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is ItemHolder) {
-            holder.bind(repo = repos[position])
+            repos[position]?.let {
+                holder.bind(repo = it)
+            }
         }
     }
 
