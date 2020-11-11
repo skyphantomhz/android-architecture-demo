@@ -8,29 +8,78 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.data.model.Repo
 import com.example.demolocol.R
 
-class RepoAdapter : RecyclerView.Adapter<RepoAdapter.ViewHolder>(){
 
-    private var repos = listOf<Repo>()
+class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val VIEW_TYPE_LOADING = 0
+    private val VIEW_TYPE_NORMAL = 1
+    private var isLoaderVisible = false
 
-    fun setData(repos: List<Repo>){
-        this.repos = repos
+    private var repos = mutableListOf<Repo>()
+
+    fun setData(repos: List<Repo>) {
+        this.repos = repos.toMutableList()
         notifyDataSetChanged()
     }
 
-    inner class ViewHolder(view: View): RecyclerView.ViewHolder(view){
-        fun bind(repo: Repo){
-            itemView.findViewById<TextView>(R.id.tv_title).text = repo.full_name
+    override fun getItemViewType(position: Int): Int {
+        return if (isLoaderVisible) {
+            if (position == repos.size - 1) VIEW_TYPE_LOADING else VIEW_TYPE_NORMAL
+        } else {
+            VIEW_TYPE_NORMAL
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_repo, parent, false)
-        return ViewHolder(view)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_NORMAL -> ItemHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_repo, parent, false)
+            )
+            else -> ProgressHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_loading, parent, false)
+            )
+        }
+    }
+
+    fun addLoading() {
+        isLoaderVisible = true
+        repos.add(Repo())
+        notifyItemInserted(repos.size - 1)
+    }
+
+    fun removeLoading() {
+        isLoaderVisible = false
+        val position: Int = repos.size - 1
+        val item: Repo? = getItem(position)
+        if (item != null) {
+            repos.removeAt(position)
+            notifyItemRemoved(position)
+        }
+    }
+
+    private fun getItem(position: Int): Repo? {
+        return repos[position]
     }
 
     override fun getItemCount(): Int = repos.size
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(repo = repos[position])
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is ItemHolder) {
+            holder.bind(repo = repos[position])
+        }
     }
+
+    fun addData(data: List<Repo>) {
+        removeLoading()
+        repos.addAll(data)
+    }
+
+    inner class ItemHolder(view: View) : RecyclerView.ViewHolder(view) {
+        fun bind(repo: Repo) {
+            itemView.findViewById<TextView>(R.id.tv_title).text = repo.full_name
+        }
+    }
+
+    inner class ProgressHolder(view: View) : RecyclerView.ViewHolder(view) {}
 }

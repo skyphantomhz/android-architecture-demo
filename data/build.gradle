@@ -41,6 +41,7 @@ dependencies {
 
     implementation deps.room.runtime
     kapt deps.room.compiler
+    kapt deps.room.runtime
     implementation deps.room.ktx
 
     implementation deps.koin.android

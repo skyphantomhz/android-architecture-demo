@@ -8,5 +8,8 @@ import retrofit2.http.Query
 interface RepoService {
 
     @GET(SEARCH_REPO)
-    suspend fun searchRepos(@Query("q") query: String): RepoSearchResponse
+    suspend fun searchRepos(
+        @Query("q") query: String,
+        @Query("page") page: Int
+    ): RepoSearchResponse
 }

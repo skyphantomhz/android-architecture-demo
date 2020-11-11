@@ -1,17 +1,9 @@
 package com.example.data.vo
 
-data class Resource<out T>(val status: Status, val data: T?, val message: String?) {
-    companion object {
-        fun <T> success(data: T?): Resource<T> {
-            return Resource(Status.SUCCESS, data, null)
-        }
+sealed class Resource<out T>
 
-        fun <T> error(msg: String, data: T?): Resource<T> {
-            return Resource(Status.ERROR, data, msg)
-        }
+object Loading: Resource<Nothing>()
 
-        fun <T> loading(data: T?): Resource<T> {
-            return Resource(Status.LOADING, data, null)
-        }
-    }
-}
+data class Success<out T>(val data: T): Resource<T>()
+
+data class Error(val exception: Throwable): Resource<Nothing>()
