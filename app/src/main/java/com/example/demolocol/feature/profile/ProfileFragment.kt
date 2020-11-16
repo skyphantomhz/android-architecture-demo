@@ -1,4 +1,4 @@
-package com.example.demolocol.feature.detail
+package com.example.demolocol.feature.profile
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,23 +8,24 @@ import com.example.demolocol.R
 import com.example.demolocol.base.BaseFragment
 import org.koin.android.viewmodel.ext.android.viewModel
 
-class DetailFragment : BaseFragment() {
+class ProfileFragment : BaseFragment() {
 
     companion object {
-        fun newInstance() = DetailFragment()
+        fun newInstance() = ProfileFragment()
     }
 
-    private val detailViewModel: DetailViewModel by viewModel()
+    private val profileViewModel: ProfileViewModel by viewModel()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.detail_fragment, container, false)
+        return inflater.inflate(R.layout.profile_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
     }
 
 }

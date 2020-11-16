@@ -2,31 +2,25 @@ package com.example.demolocol.feature.home
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.core.ui.PaginationListener
-import com.example.core.ui.PaginationListener.PAGE_START
-import com.example.data.vo.Error
-import com.example.data.vo.Loading
-import com.example.data.vo.Success
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentStatePagerAdapter
 import com.example.demolocol.R
+import com.example.demolocol.base.BaseFragment
+import com.example.demolocol.feature.profile.ProfileFragment
+import com.example.demolocol.feature.search.SearchFragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.fragment_home.*
 import org.koin.android.viewmodel.ext.android.viewModel
 
-class HomeFragment : Fragment() {
+
+class HomeFragment : BaseFragment(), BottomNavigationView.OnNavigationItemSelectedListener {
 
     private val homeViewModel: HomeViewModel by viewModel()
-    private val repoAdapter = RepoAdapter()
-    private val layoutManager = LinearLayoutManager(context)
-
-    private var currentPage: Int = PAGE_START
-    private val isLastPage = false
-    private val totalPage = 10
-    private var isLoading = false
+    private lateinit var adapter: HomeAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,68 +31,40 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        rv_repo.layoutManager = layoutManager
-        rv_repo.adapter = repoAdapter
+        adapter = HomeAdapter(
+            childFragmentManager, FragmentStatePagerAdapter.POSITION_NONE,
+            listOf(SearchFragment.newInstance(), ProfileFragment.newInstance())
+        )
+        bnv_home.setOnNavigationItemSelectedListener(this)
+        vp_home.adapter = adapter
 
-
-        view.findViewById<SearchView>(R.id.sv_repo).also {
-            it.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    homeViewModel.searchRepo(query)
-                    return true
-                }
-
-                override fun onQueryTextChange(query: String?): Boolean {
-                    homeViewModel.onQueryTextChange(query)
-                    return true
-                }
-
-            })
-        }
-
-        homeViewModel.repos.observe(viewLifecycleOwner, Observer {
-            when (it) {
-                is Loading -> {
-                }
-                is Success -> repoAdapter.setData(it.data)
-                is Error -> {
-                    repoAdapter.setData(emptyList())
-                }
-            }
-        })
-
-        homeViewModel.moreRepo.observe(viewLifecycleOwner, Observer {
-            when (it) {
-                is Loading -> {
-                }
-                is Success -> {
-                    repoAdapter.addData(it.data)
-                    isLoading = false
-                }
-                is Error -> {
-                }
-            }
-        })
-
-        rv_repo.addOnScrollListener(object : PaginationListener(layoutManager) {
-            override fun isLastPage(): Boolean {
-                return this@HomeFragment.isLastPage
-            }
-
-            override fun loadMoreItems() {
-                this@HomeFragment.isLoading = true
-                repoAdapter.addLoading()
-                homeViewModel.nextPage(++this@HomeFragment.currentPage)
-            }
-
-            override fun isLoading(): Boolean {
-                return this@HomeFragment.isLoading
-            }
-        });
     }
+
+
+
 
     companion object {
         @JvmStatic
         fun newInstance() = HomeFragment()
     }
+
+    override fun onNavigationItemSelected(menuItem: MenuItem): Boolean {
+        vp_home.currentItem = when (menuItem.itemId) {
+            R.id.searchFragment -> 0
+            else -> 1
+        }
+        return true
+    }
+}
+
+class HomeAdapter(
+    fragmentManager: FragmentManager,
+    behavior: Int,
+    private val fragments: List<Fragment>
+) : FragmentStatePagerAdapter(fragmentManager, behavior) {
+    override fun getItem(position: Int): Fragment {
+        return fragments[position]
+    }
+
+    override fun getCount(): Int = fragments.size
 }

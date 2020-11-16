@@ -1,15 +1,17 @@
-package com.example.demolocol.feature.home
+package com.example.demolocol.feature.search
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.cardview.widget.CardView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.example.data.model.Repo
 import com.example.demolocol.R
 
 
-class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RepoAdapter(private val onItemClickListener: () -> Unit) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val VIEW_TYPE_LOADING = 0
     private val VIEW_TYPE_NORMAL = 1
     private var isLoaderVisible = false
@@ -79,6 +81,9 @@ class RepoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     inner class ItemHolder(view: View) : RecyclerView.ViewHolder(view) {
         fun bind(repo: Repo) {
+            itemView.findViewById<ConstraintLayout>(R.id.cl_item).setOnClickListener {
+                onItemClickListener()
+            }
             itemView.findViewById<TextView>(R.id.tv_title).text = repo.full_name
         }
     }

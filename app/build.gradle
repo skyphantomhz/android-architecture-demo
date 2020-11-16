@@ -56,6 +56,8 @@ dependencies {
     implementation deps.lifecycle.runtime
     implementation deps.lifecycle.viewmodel_ktx
     implementation deps.lifecycle.livedata_ktx
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
     kapt deps.lifecycle.compiler
 
     implementation deps.navigation.runtime_ktx

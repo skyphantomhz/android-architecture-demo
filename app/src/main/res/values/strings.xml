@@ -2,4 +2,6 @@
     <string name="app_name">Demo Locol</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bottom_navigation_home">Home</string>
+    <string name="bottom_navigation_profile">Profile</string>
 </resources>

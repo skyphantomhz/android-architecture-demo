@@ -1,10 +1,19 @@
 <resources>
+
+    <attr name="colorSurface" format="reference|color"/>
+    <attr name="colorOnPrimary" format="reference|color"/>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorSurface">@color/colorWhiteFade</item>
+    </style>
+
+
+    <style name="ThemeOverlay.App.BottomNavigationView" parent="">
+        <item name="colorPrimary">@android:color/white</item>
     </style>
 
 </resources>
